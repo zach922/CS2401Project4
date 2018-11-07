@@ -1,0 +1,185 @@
+/*******************************************************************
+ * Project 4
+ * Zach Schmitz
+ * CS 2401 11/4/18
+ * 
+ * doubly linked list implementation .template file 
+*******************************************************************/
+
+#include<iostream>
+
+using namespace std;
+
+template<class T>
+dlist<T>::dlist(){
+    head = tail = NULL;
+    nodeCount = 0;
+}
+
+template<class T>
+dlist<T>::dlist(const dlist& d){
+    head = tail = NULL;
+    nodeCount = 0;
+    dnode <T>* curser = d.head;
+    
+    while (curser != NULL){
+        rear_insert(curser->data());
+        curser = curser->next();
+    }
+}
+
+template<class T>
+dlist<T>::~dlist(){
+    dnode <T> * rmptr = tail;
+    if (tail == NULL && head == NULL){
+        return;
+    }
+
+    while(rmptr != NULL){
+        tail = tail->previous();
+        delete rmptr;
+        rmptr = tail;
+        --nodeCount;
+    }
+}
+
+template<class T>
+dlist<T> dlist<T>::operator = (const dlist& d){
+    if(this == &d){
+        return *this;
+    }
+
+    dnode <T> * curser = d.head;
+    while (curser != NULL){
+        rear_insert(curser->data());
+        curser = curser->next();
+        ++nodeCount;
+    }
+    return *this;
+}
+
+
+template<class T>
+void dlist<T>::rear_insert(const T& item){
+    if (tail == NULL){
+        head = tail = new dnode<T>(item);
+    }
+    else{
+        tail->set_next(new dnode<T>(item, NULL, tail));
+        tail = tail->next();
+    }
+    ++nodeCount;
+}
+
+template<class T>
+void dlist<T>::front_insert(const T& item){
+    if (head == NULL){
+        head = tail = new dnode<T>(item);
+    }
+    else{
+        head->set_previous(new dnode<T>(item, head, NULL));
+        head = head->previous();
+    }
+    ++nodeCount;
+}
+
+template<class T>
+void dlist<T>::remove(const iterator& ni){
+    dnode<T> * curser = head;
+    while(curser != NULL){
+        if(curser == ni.current){
+            if(curser == head){front_remove();}
+            else if(curser == tail){rear_remove();}
+            else{
+                curser->previous()->set_next(curser->next());
+                curser->next()->set_previous(curser->previous());
+                delete curser;
+                --nodeCount;
+            }
+        }
+        curser = curser->next();
+    }  
+}
+
+//what if there is nothing in the list? what it there is only one item in the list?
+//
+template<class T>
+void dlist<T>::front_remove(){
+    if(head == NULL && tail == NULL){
+        cerr << "Empty List" << endl;
+    }
+    else if(head->next() == NULL && tail->previous() == NULL){
+        delete head; 
+        head = tail = NULL;          
+        --nodeCount;
+    }   
+    else{
+        dnode <T> * rm = head;
+        head = head->next();
+        head->set_previous(NULL);
+        delete rm;
+        --nodeCount;
+    }
+}
+
+template<class T>
+void dlist<T>::rear_remove(){
+    if(head->next() == NULL && tail->previous() == NULL){
+        delete head;   
+        head = tail =NULL;        
+        --nodeCount;
+    }
+    else{
+        dnode <T> * rm = tail;
+        tail = tail->previous();
+        tail->set_next(NULL);
+        delete rm;
+        --nodeCount;
+    }
+}
+
+template<class T>
+void dlist<T>::show() const{
+    dnode <T> * curser = head;
+    while(curser != NULL){
+        cout << curser->data()<<endl;
+        curser = curser->next();
+    }
+}
+
+template<class T>
+void dlist<T>::reverse_show() const{
+    dnode <T> * curser = tail;
+    while(curser != NULL){
+        cout << curser->data()<<endl;
+        curser = curser->previous();
+    }
+}
+
+template<class T>
+void dlist<T>::insert_before(const iterator& ni, const T& item){
+    if(ni.current == head){
+        head->set_previous(new dnode<T>(item,head,NULL));
+        head = head->previous();
+    }
+    else{
+        dnode <T> * in =ni.current->previous();
+        ni.current->set_previous(new dnode<T>(item,ni.current, in));
+        in->set_next(ni.current->previous());
+    }
+    ++nodeCount;
+}
+
+template<class T>
+void dlist<T>::insert_after(const iterator& ni, const T& item){
+    if(ni.current == tail){
+        tail->set_next(new dnode<T>(item, NULL, tail));
+        tail = tail->next();
+    }
+    else{
+        dnode <T> * in = ni.current->next();
+        ni.current->set_next(new dnode<T>(item, in, ni.current));
+        in->set_previous(ni.current->next());
+    }
+    ++nodeCount;
+}
